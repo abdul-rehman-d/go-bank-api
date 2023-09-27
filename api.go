@@ -10,12 +10,13 @@ import (
 
 type ApiServer struct {
 	listenAddress string
-	// s *Storage
+	store         Storage
 }
 
-func NewApiServer(listenAddress string) (*ApiServer, error) {
+func NewApiServer(listenAddress string, store Storage) (*ApiServer, error) {
 	return &ApiServer{
 		listenAddress,
+		store,
 	}, nil
 }
 
