@@ -51,7 +51,29 @@ func (server *ApiServer) handleGetAccount(w http.ResponseWriter, r *http.Request
 }
 
 func (server *ApiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	accReq := CreateAccountRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&accReq); err != nil {
+		return fmt.Errorf("inavalid request body")
+	}
+	if len(accReq.FirstName) == 0 {
+		return fmt.Errorf("first name is required")
+	}
+	if len(accReq.FirstName) < 3 {
+		return fmt.Errorf("first name cannot be less than 3 characters")
+	}
+	if len(accReq.LastName) == 0 {
+		return fmt.Errorf("last name is required")
+	}
+	if len(accReq.LastName) < 3 {
+		return fmt.Errorf("last name cannot be less than 3 characters")
+	}
+	acc := NewAccount(accReq.FirstName, accReq.LastName)
+	acc, err := server.store.CreateAccount(acc)
+	if err != nil {
+		return fmt.Errorf("failed to create account in db: %s", err.Error())
+	}
+
+	return WriteJSON(w, http.StatusOK, acc)
 }
 
 func (server *ApiServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {

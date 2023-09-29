@@ -55,8 +55,35 @@ func NewPostgresStorage() (*PostgresStorage, error) {
 	}, nil
 }
 
-func (*PostgresStorage) CreateAccount(acc *Account) (*Account, error) {
-	return nil, nil
+func (s *PostgresStorage) CreateAccount(acc *Account) (*Account, error) {
+	insertQuery := `
+	insert into account (firstName, lastName, number, balance, created_at)
+	values($1, $2, $3, $4, $5)
+	RETURNING id, firstName, lastName, number, balance, created_at`
+
+	createdAccount := &Account{}
+
+	err := s.db.QueryRow(
+		insertQuery,
+		acc.FirstName,
+		acc.LastName,
+		acc.Number,
+		acc.Balance,
+		acc.CreatedAt,
+	).Scan(
+		&createdAccount.ID,
+		&createdAccount.FirstName,
+		&createdAccount.LastName,
+		&createdAccount.Number,
+		&createdAccount.Balance,
+		&createdAccount.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return createdAccount, nil
 }
 func (*PostgresStorage) UpdateACcount(acc *Account) (*Account, error) {
 	return nil, nil
