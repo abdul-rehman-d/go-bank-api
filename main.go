@@ -14,6 +14,11 @@ func main() {
 		log.Fatalln("Failed to connect to db")
 	}
 
+	err = store.Init()
+	if err != nil {
+		log.Fatalln("Failed to initialize db", err.Error())
+	}
+
 	apiServer, err = NewApiServer("0.0.0.0:5000", store)
 	if err != nil {
 		log.Fatalln("Failed to initialize API Server")

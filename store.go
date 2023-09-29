@@ -17,6 +17,27 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
+func (s *PostgresStorage) Init() error {
+	err := s.createAccountTable()
+	return err
+}
+
+func (s *PostgresStorage) createAccountTable() error {
+	query := `CREATE TABLE IF NOT EXISTS account (
+		id					serial			primary key,
+		firstName 	varchar(50),
+		lastName		varchar(50),
+		number			serial,
+		balance			numeric,
+		created_at	timestamp
+ 	);`
+	_, err := s.db.Exec(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func NewPostgresStorage() (*PostgresStorage, error) {
 	connStr := "postgres://root:postgres@localhost:5433/go-chat?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
