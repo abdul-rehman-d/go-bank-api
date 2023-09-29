@@ -85,12 +85,15 @@ func (s *PostgresStorage) CreateAccount(acc *Account) (*Account, error) {
 
 	return createdAccount, nil
 }
+
 func (*PostgresStorage) UpdateACcount(acc *Account) (*Account, error) {
 	return nil, nil
 }
+
 func (*PostgresStorage) DeleteAccount(id int) (*Account, error) {
 	return nil, nil
 }
+
 func (*PostgresStorage) GetAccount(id int) (*Account, error) {
 	return nil, nil
 }
