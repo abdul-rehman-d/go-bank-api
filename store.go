@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/lib/pq"
 )
@@ -94,6 +95,29 @@ func (*PostgresStorage) DeleteAccount(id int) (*Account, error) {
 	return nil, nil
 }
 
-func (*PostgresStorage) GetAccount(id int) (*Account, error) {
-	return nil, nil
+func (s *PostgresStorage) GetAccount(id int) (*Account, error) {
+	query := `select * from account where id = $1`
+
+	acc := &Account{}
+
+	err := s.db.QueryRow(
+		query,
+		id,
+	).Scan(
+		&acc.ID,
+		&acc.FirstName,
+		&acc.LastName,
+		&acc.Number,
+		&acc.Balance,
+		&acc.CreatedAt,
+	)
+
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil, fmt.Errorf("not found")
+		}
+		return nil, err
+	}
+
+	return acc, nil
 }

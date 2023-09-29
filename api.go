@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -23,6 +24,7 @@ func NewApiServer(listenAddress string, store Storage) (*ApiServer, error) {
 func (server *ApiServer) Run() error {
 	router := mux.NewRouter()
 	router.Handle("/account", makeHttpHandleFunc(server.handleAccount))
+	router.Handle("/account/{id}", makeHttpHandleFunc(server.handleGetAccount))
 
 	fmt.Println("Server is running on: ", server.listenAddress)
 
@@ -30,9 +32,6 @@ func (server *ApiServer) Run() error {
 }
 
 func (server *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
-	if r.Method == "GET" {
-		return server.handleGetAccount(w, r)
-	}
 	if r.Method == "POST" {
 		return server.handleCreateAccount(w, r)
 	}
@@ -46,7 +45,33 @@ func (server *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) e
 }
 
 func (server *ApiServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	acc := NewAccount("mad", "man")
+	if r.Method != "GET" {
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+
+	id := mux.Vars(r)["id"]
+
+	if len(id) == 0 {
+		return fmt.Errorf("param \"id\" is required")
+	}
+
+	parsedId, err := strconv.Atoi(id)
+
+	if err != nil {
+		return fmt.Errorf("id must be int")
+	}
+
+	acc, err := server.store.GetAccount(parsedId)
+
+	if err != nil {
+		if err.Error() == "not found" {
+			return err
+		}
+
+		fmt.Printf("failed to get account with id %d: %s", parsedId, err.Error())
+		return fmt.Errorf("something went wrong")
+	}
+
 	return WriteJSON(w, http.StatusOK, acc)
 }
 
