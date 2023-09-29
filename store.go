@@ -12,6 +12,7 @@ type Storage interface {
 	UpdateACcount(*Account) (*Account, error)
 	DeleteAccount(int) (*Account, error)
 	GetAccount(int) (*Account, error)
+	GetAllAccounts() ([]*Account, error)
 }
 
 type PostgresStorage struct {
@@ -120,4 +121,34 @@ func (s *PostgresStorage) GetAccount(id int) (*Account, error) {
 	}
 
 	return acc, nil
+}
+
+func (s *PostgresStorage) GetAllAccounts() ([]*Account, error) {
+	accounts := []*Account{}
+
+	query := `select * from account`
+
+	rows, err := s.db.Query(query)
+
+	if err != nil {
+		return accounts, err
+	}
+
+	for rows.Next() {
+		acc := &Account{}
+		err := rows.Scan(
+			&acc.ID,
+			&acc.FirstName,
+			&acc.LastName,
+			&acc.Number,
+			&acc.Balance,
+			&acc.CreatedAt,
+		)
+		if err != nil {
+			return accounts, err
+		}
+		accounts = append(accounts, acc)
+	}
+
+	return accounts, nil
 }

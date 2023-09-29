@@ -32,6 +32,9 @@ func (server *ApiServer) Run() error {
 }
 
 func (server *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == "GET" {
+		return server.handleGetAllAccounts(w, r)
+	}
 	if r.Method == "POST" {
 		return server.handleCreateAccount(w, r)
 	}
@@ -42,6 +45,17 @@ func (server *ApiServer) handleAccount(w http.ResponseWriter, r *http.Request) e
 	return WriteJSON(w, http.StatusMethodNotAllowed, ApiError{
 		Error: fmt.Sprintf("method not allowed %s", r.Method),
 	})
+}
+
+func (server *ApiServer) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) error {
+	accounts, err := server.store.GetAllAccounts()
+
+	if err != nil {
+		fmt.Printf("failed to get all accounts: %s", err.Error())
+		return fmt.Errorf("something went wrong")
+	}
+
+	return WriteJSON(w, http.StatusOK, accounts)
 }
 
 func (server *ApiServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
